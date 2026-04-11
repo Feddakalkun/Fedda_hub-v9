@@ -50,7 +50,7 @@ RUN python3 -m pip install --no-cache-dir \
 RUN python3 -m pip install --no-cache-dir \
     xformers --index-url https://download.pytorch.org/whl/cu121
 
-# Clone ComfyUI at latest master to support newest LTX nodes
+# Clone ComfyUI at latest master to support newest LTX nodes (cache-bust: 2026-04-11)
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI \
     && cd /app/ComfyUI \
     && pip install --no-cache-dir -r requirements.txt
