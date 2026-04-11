@@ -448,7 +448,7 @@ function Venv-Pip {
 # ============================================================================
 Write-Header "STEP 2/7 - ComfyUI Core"
 
-$ComfyUICommit = "0467f69"  # Pinned stable
+$ComfyUICommit = "a2840e75"  # Pinned stable - includes LTXAV 2.3 model support
 $ComfyDir = Join-Path $RootPath "ComfyUI"
 
 if (-not (Test-Path $ComfyDir)) {
