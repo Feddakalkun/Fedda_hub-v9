@@ -1,4 +1,4 @@
-﻿# ============================================================================ 
+# ============================================================================ 
 # FEDDA Full Installer - Portable (Embedded Python/Node/Git/Ollama)
 # ============================================================================ 
 
@@ -685,7 +685,7 @@ function Install-Ollama {
 
 # 4. Setup ComfyUI Repository
 # Pinned to tested stable commit to prevent breaking changes for users
-$ComfyUICommit = "0467f69"  # 2026-02 stable: comfy aimdo 0.2.2
+$ComfyUICommit = "a2840e75"  # Pinned stable - includes LTXAV 2.3 model support
 Write-Log "`n[ComfyUI 4/9] Setting up ComfyUI repository (pinned: $ComfyUICommit)..."
 $ComfyDir = Join-Path $RootPath "ComfyUI"
 if (-not (Test-Path $ComfyDir)) {

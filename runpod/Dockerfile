@@ -42,7 +42,8 @@ RUN python3 -m pip install --no-cache-dir xformers --index-url https://download.
 RUN python3 -m pip install --no-cache-dir torchao || true
 RUN python3 -m pip install --no-cache-dir sageattention || true
 
-RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI \
+# Clone ComfyUI at latest master to support newest LTX nodes (cache-bust: 2026-04-11)
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI \
     && cd /app/ComfyUI \
     && python3 -m pip install --no-cache-dir -r requirements.txt
 
