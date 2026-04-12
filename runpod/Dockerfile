@@ -62,7 +62,7 @@ RUN python3 -m pip install --no-cache-dir \
     diffusers transformers accelerate safetensors sentencepiece \
     onnxruntime-gpu opencv-python-headless pillow tqdm requests psutil \
     fastapi "uvicorn[standard]" python-multipart httpx \
-    jupyterlab
+    jupyterlab ipykernel terminado jupyter_server_terminals
 
 COPY --from=frontend-builder /app/backend /app/backend
 COPY --from=frontend-builder /app/config /app/config
