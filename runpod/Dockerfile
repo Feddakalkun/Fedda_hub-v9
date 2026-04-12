@@ -71,6 +71,9 @@ RUN set -eux; \
     clone_required https://github.com/yolain/ComfyUI-Easy-Use.git ComfyUI-Easy-Use; \
     clone_required https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git ComfyUI-Custom-Scripts; \
     clone_required https://github.com/comfyuistudio/ComfyUI-Studio-nodes.git ComfyUI-Studio-nodes; \
+    clone_required https://github.com/theUpsider/ComfyUI-Styles_CSV_Loader.git ComfyUI-Styles_CSV_Loader; \
+    clone_required https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git ComfyUI-Inpaint-CropAndStitch; \
+    clone_required https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git ComfyUI_Comfyroll_CustomNodes; \
     clone_optional https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git ComfyUI-VideoHelperSuite; \
     clone_optional https://github.com/jtydhr88/ComfyUI-qwenmultiangle.git ComfyUI-qwenmultiangle; \
     clone_optional https://github.com/kijai/ComfyUI-Florence2.git ComfyUI-Florence2; \
@@ -85,6 +88,9 @@ RUN set -eux; \
       /app/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt \
       /app/ComfyUI/custom_nodes/ComfyUI-Easy-Use/requirements.txt \
       /app/ComfyUI/custom_nodes/ComfyUI-Studio-nodes/requirements.txt \
+      /app/ComfyUI/custom_nodes/ComfyUI-Styles_CSV_Loader/requirements.txt \
+      /app/ComfyUI/custom_nodes/ComfyUI-Inpaint-CropAndStitch/requirements.txt \
+      /app/ComfyUI/custom_nodes/ComfyUI_Comfyroll_CustomNodes/requirements.txt \
       /app/ComfyUI/custom_nodes/ComfyUI-VideoHelperSuite/requirements.txt \
       /app/ComfyUI/custom_nodes/ComfyUI-qwenmultiangle/requirements.txt \
       /app/ComfyUI/custom_nodes/ComfyUI-Florence2/requirements.txt \
