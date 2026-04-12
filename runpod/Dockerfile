@@ -48,21 +48,35 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI \
     && python3 -m pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app/ComfyUI/custom_nodes
-RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git \
-    && git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git \
-    && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git \
-    && git clone --depth 1 https://github.com/city96/ComfyUI-GGUF.git \
-    && git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Pack.git \
-    && git clone --depth 1 https://github.com/kijai/ComfyUI-KJNodes.git \
-    && git clone --depth 1 https://github.com/yolain/ComfyUI-Easy-Use.git \
-    && git clone --depth 1 https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git \
-    && git clone --depth 1 https://github.com/comfyuistudio/ComfyUI-Studio-nodes.git \
-    && git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git \
-    && git clone --depth 1 https://github.com/jtydhr88/ComfyUI-qwenmultiangle.git \
-    && git clone --depth 1 https://github.com/kijai/ComfyUI-Florence2.git \
-    && git clone --depth 1 https://github.com/kijai/ComfyUI-SeedVR2_VideoUpscaler.git \
-    && git clone --depth 1 https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git
-RUN git clone --depth 1 https://github.com/Saganaki22/ComfyUI-FishAudioS2.git || true
+RUN set -eux; \
+    clone_required() { \
+      repo="$1"; name="$2"; \
+      echo "[FEDDA] Cloning required node: ${name}"; \
+      git clone --depth 1 "${repo}" "${name}"; \
+    }; \
+    clone_optional() { \
+      repo="$1"; name="$2"; \
+      echo "[FEDDA] Cloning optional node: ${name}"; \
+      if ! git clone --depth 1 "${repo}" "${name}"; then \
+        echo "[FEDDA] WARN: optional node clone failed: ${name} (${repo})"; \
+        rm -rf "${name}"; \
+      fi; \
+    }; \
+    clone_required https://github.com/ltdrdata/ComfyUI-Manager.git ComfyUI-Manager; \
+    clone_required https://github.com/rgthree/rgthree-comfy.git rgthree-comfy; \
+    clone_required https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git ComfyUI_bitsandbytes_NF4; \
+    clone_required https://github.com/city96/ComfyUI-GGUF.git ComfyUI-GGUF; \
+    clone_required https://github.com/ltdrdata/ComfyUI-Impact-Pack.git ComfyUI-Impact-Pack; \
+    clone_required https://github.com/kijai/ComfyUI-KJNodes.git ComfyUI-KJNodes; \
+    clone_required https://github.com/yolain/ComfyUI-Easy-Use.git ComfyUI-Easy-Use; \
+    clone_required https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git ComfyUI-Custom-Scripts; \
+    clone_required https://github.com/comfyuistudio/ComfyUI-Studio-nodes.git ComfyUI-Studio-nodes; \
+    clone_optional https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git ComfyUI-VideoHelperSuite; \
+    clone_optional https://github.com/jtydhr88/ComfyUI-qwenmultiangle.git ComfyUI-qwenmultiangle; \
+    clone_optional https://github.com/kijai/ComfyUI-Florence2.git ComfyUI-Florence2; \
+    clone_optional https://github.com/kijai/ComfyUI-SeedVR2_VideoUpscaler.git ComfyUI-SeedVR2_VideoUpscaler; \
+    clone_optional https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git ComfyUI-Frame-Interpolation; \
+    clone_optional https://github.com/Saganaki22/ComfyUI-FishAudioS2.git ComfyUI-FishAudioS2
 
 RUN cd /app/ComfyUI/custom_nodes/ComfyUI-Manager && python3 -m pip install --no-cache-dir -r requirements.txt || true
 RUN cd /app/ComfyUI/custom_nodes/ComfyUI-Impact-Pack && python3 -m pip install --no-cache-dir -r requirements.txt || true
