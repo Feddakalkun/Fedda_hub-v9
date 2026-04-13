@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  RUNPOD_IMAGE: feddakalkun/fedda-runpod
+  RUNPOD_IMAGE: feddakalkun/fedda-runpod-v9
 
 jobs:
   build-and-push:

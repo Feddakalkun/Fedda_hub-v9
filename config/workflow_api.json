@@ -443,11 +443,35 @@
         "type": "number",
         "label": "Video Length (seconds)"
       },
+      "video_start_frame": {
+        "node_id": "75",
+        "input_key": "skip_first_frames",
+        "type": "number",
+        "label": "Skip First Frames"
+      },
+      "video_frame_load_cap": {
+        "node_id": "75",
+        "input_key": "frame_load_cap",
+        "type": "number",
+        "label": "Frame Load Cap"
+      },
       "fps": {
         "node_id": "137",
         "input_key": "Number",
         "type": "number",
         "label": "FPS"
+      },
+      "rife_multiplier": {
+        "node_id": "133",
+        "input_key": "multiplier",
+        "type": "number",
+        "label": "RIFE Multiplier"
+      },
+      "output_fps": {
+        "node_id": "132",
+        "input_key": "frame_rate",
+        "type": "number",
+        "label": "Output FPS"
       },
       "seed": {
         "node_id": "119",

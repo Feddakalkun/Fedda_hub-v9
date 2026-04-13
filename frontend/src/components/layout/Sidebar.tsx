@@ -39,72 +39,7 @@ interface NavSection {
   items: NavItem[];
 }
 
-const SECTIONS: NavSection[] = [
-  {
-    label: 'CREATE',
-    items: [
-      { id: 'chat',      label: 'Agent Chat',   icon: MessageSquare },
-      { 
-        id: 'image',     
-        label: 'Image Studio', 
-        icon: Sparkles,
-        subitems: [
-          {
-            id: 'z-image',
-            label: 'Z-Image',
-            subitems: [
-              { id: 'z-image-txt2img', label: 'Txt2Img' },
-            ],
-          },
-          {
-            id: 'flux',
-            label: 'FLUX2-KLEIN',
-            subitems: [
-              { id: 'flux-txt2img', label: 'Txt2Img' },
-            ],
-          },
-          {
-            id: 'qwen',
-            label: 'Qwen',
-            subitems: [
-              { id: 'qwen-txt2img', label: 'Txt2Img' },
-              { id: 'qwen-image-ref', label: 'Image Reference' },
-              { id: 'qwen-multi-angle', label: 'Multi Angles' },
-            ],
-          },
-          { id: 'image-other', label: 'Other' }
-        ]
-      },
-      {
-        id: 'video',
-        label: 'Video Studio',
-        icon: Video,
-        subitems: [
-          { id: 'wan22-vid2vid', label: 'WAN 2.2 — Vid2Vid' },
-          { id: 'wan22-img2vid', label: 'WAN 2.2 — Img2Vid' },
-          { id: 'ltx-flf',       label: 'LTX — First/Last Frame' },
-          { id: 'ltx-img-audio', label: 'LTX — Img + Audio Lipsync' },
-        ]
-      },
-      { id: 'audio',     label: 'Audio / SFX',  icon: Music },
-    ],
-  },
-  {
-    label: 'EXPLORE',
-    items: [
-      { id: 'gallery',   label: 'Gallery',      icon: Images },
-      { id: 'videos',    label: 'Videos',       icon: Film },
-      { id: 'library',   label: 'LoRA Library', icon: LayoutDashboard },
-      { id: 'workflows', label: 'Workflows',    icon: Wand2 },
-    ],
-  },
-  {
-    label: 'SYSTEM',
-    items: [
-      { id: 'logs',      label: 'Console Logs', icon: Terminal },
-    ],
-  },
-];
+import { SIDEBAR_SECTIONS as SECTIONS } from '../../config/navigation';
 
 const SIDEBAR_EXPAND_KEY = 'fedda_sidebar_expand_v1';
 

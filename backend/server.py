@@ -1440,6 +1440,77 @@ class GenerateRequest(BaseModel):
     workflow_id: str
     params: Dict[str, Any]
 
+class VideoExtractRequest(BaseModel):
+    video_filename: str
+    target_time_sec: float
+
+@app.post("/api/video/extract-frame")
+async def extract_video_frame(req: VideoExtractRequest):
+    import cv2
+    import time
+    from pathlib import Path
+    try:
+        video_path = COMFY_DIR / "input" / req.video_filename
+        if not video_path.exists():
+            return {"success": False, "error": "Video file not found in input dir."}
+        
+        cap = cv2.VideoCapture(str(video_path))
+        fps = cap.get(cv2.CAP_PROP_FPS) or 24
+        target_frame = int(req.target_time_sec * fps)
+        
+        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            return {"success": False, "error": "Could not read the frame at the specified time."}
+
+        out_filename = f"extracted_{int(time.time())}.jpg"
+        out_path = COMFY_DIR / "input" / out_filename
+        cv2.imwrite(str(out_path), frame)
+
+        return {"success": True, "filename": out_filename}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+class CaptionRequest(BaseModel):
+    image_filename: str
+    model: str = "llama3.2-vision:latest"
+    prompt: str = "Capture the exact pose, posture, and environmental setting of this image in a highly detailed descriptive paragraph for an AI image generator. Focus heavily on how the person is positioned and their surroundings."
+
+@app.post("/api/vision/caption")
+async def caption_image(req: CaptionRequest):
+    import base64
+    import httpx
+    try:
+        img_path = COMFY_DIR / "input" / req.image_filename
+        if not img_path.exists():
+            return {"success": False, "error": "Image file not found."}
+        
+        with open(img_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+            
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post("http://127.0.0.1:11434/api/generate", json={
+                "model": "user-v4/joycaption-beta:latest",
+                "prompt": req.prompt,
+                "images": [b64],
+                "stream": False
+            })
+            if resp.status_code == 404:
+                # Fallback model
+                resp = await client.post("http://127.0.0.1:11434/api/generate", json={
+                    "model": "llama3.2-vision:latest",
+                    "prompt": req.prompt,
+                    "images": [b64],
+                    "stream": False
+                })
+            
+            resp.raise_for_status()
+            data = resp.json()
+            return {"success": True, "caption": data.get("response", "").strip()}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     """Upload a video or image to ComfyUI's input directory."""
