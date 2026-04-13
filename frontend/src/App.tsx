@@ -24,6 +24,8 @@ import { ImageStudioPage } from './pages/ImageStudioPage';
 import { VideoStudioPage } from './pages/VideoStudioPage';
 import { LibraryPage } from './pages/LibraryPage';
 import { AgentChatPage } from './pages/AgentChatPage';
+import { GalleryPage } from './pages/GalleryPage';
+import { VideosPage } from './pages/VideosPage';
 
 // ─── App ───────────────────────────────────────────────────────────────────
 function FeddaApp() {
@@ -70,6 +72,10 @@ function FeddaApp() {
         return <VideoStudioPage activeTab={activeTab} />;
       case 'library':
         return <LibraryPage />;
+      case 'gallery':
+        return <GalleryPage />;
+      case 'videos':
+        return <VideosPage />;
       default:
         return (
           <PlaceholderPage

@@ -10,6 +10,8 @@ import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { PromptAssistant } from '../../components/ui/PromptAssistant';
+import { FeddaButton, FeddaPanel, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
+import { VideoOutputPanel } from '../../components/layout/VideoOutputPanel';
 
 // ── Upload slot ───────────────────────────────────────────────────────────────
 function UploadSlot({ label, icon: Icon, accept, preview, filename, uploading, onFile }: {
@@ -85,8 +87,6 @@ export const LtxImgAudioPage = () => {
   const [pendingPromptId, setPendingPromptId] = useState<string | null>(null);
   const [currentVideo,    setCurrentVideo]    = useState<string | null>(null);
   const [history, setHistory] = usePersistentState<string[]>('ltx_ia_history', []);
-  void currentVideo;
-  void history;
   const [availableLoras, setAvailableLoras] = useState<string[]>([]);
 
   const sessionRef   = useRef<string[]>([]);
@@ -211,7 +211,7 @@ export const LtxImgAudioPage = () => {
 
           {/* Inputs */}
           <div className="space-y-2">
-            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/20">Inputs</p>
+            <FeddaSectionTitle className="text-white/20">Inputs</FeddaSectionTitle>
             <div className="flex gap-2">
               <UploadSlot label="Image" icon={ImageIcon} accept="image/*"
                 preview={imagePreview} filename={imageFilename} uploading={imageUploading}
@@ -226,7 +226,7 @@ export const LtxImgAudioPage = () => {
 
             {/* Audio mini-player */}
             {audioFilename && (
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-black/30 border border-white/[0.05]">
+              <FeddaPanel className="flex items-center gap-2.5 px-3 py-2">
                 <button onClick={toggleAudio}
                   className="w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/25 flex items-center justify-center text-violet-400 hover:bg-violet-500/30 transition-all flex-shrink-0">
                   {audioPlaying
@@ -236,7 +236,7 @@ export const LtxImgAudioPage = () => {
                 </button>
                 <p className="text-[8px] font-mono text-white/25 truncate flex-1">{audioFilename}</p>
                 <audio ref={audioRef} onEnded={() => setAudioPlaying(false)} className="hidden" />
-              </div>
+              </FeddaPanel>
             )}
           </div>
 
@@ -254,7 +254,7 @@ export const LtxImgAudioPage = () => {
 
           {/* Audio Timing */}
           <div className="space-y-3">
-            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/20">Audio Timing</p>
+            <FeddaSectionTitle className="text-white/20">Audio Timing</FeddaSectionTitle>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <div className="flex justify-between">
@@ -297,18 +297,13 @@ export const LtxImgAudioPage = () => {
           </div>
 
           {/* Seed */}
-          <div className="flex gap-2">
-            <input type="number" value={seed} onChange={e => setSeed(parseInt(e.target.value))}
-              className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl py-2.5 px-3 text-[11px] font-mono text-white/35 focus:border-violet-500/20 outline-none" />
-            <button onClick={() => setSeed(-1)}
-              className={`p-2.5 rounded-xl border transition-all ${
-                seed === -1
-                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-400'
-                  : 'bg-white/[0.02] border-white/[0.06] text-white/20 hover:text-white/50'
-              }`}>
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
+            <div className="flex gap-2">
+              <input type="number" value={seed} onChange={e => setSeed(parseInt(e.target.value))}
+                className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl py-2.5 px-3 text-[11px] font-mono text-white/35 focus:border-violet-500/20 outline-none" />
+              <FeddaButton onClick={() => setSeed(-1)} variant={seed === -1 ? 'violet' : 'ghost'} className="p-2.5 rounded-xl transition-all">
+                <RefreshCw className="w-3.5 h-3.5" />
+              </FeddaButton>
+            </div>
 
           <LoraSelector
             label="LoRA"
@@ -322,17 +317,14 @@ export const LtxImgAudioPage = () => {
 
           {/* Generate */}
           <div className="pb-4">
-            <button disabled={!canGenerate} onClick={handleGenerate}
-              className={`w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] transition-all duration-300 flex items-center justify-center gap-3 ${
-                canGenerate
-                  ? 'bg-violet-500 text-white hover:bg-violet-400 hover:shadow-[0_0_40px_rgba(139,92,246,0.35)] active:scale-[0.98]'
-                  : 'bg-white/[0.03] text-white/10 cursor-not-allowed border border-white/[0.04]'
-              }`}>
+            <FeddaButton disabled={!canGenerate} onClick={handleGenerate}
+              variant="violet"
+              className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] transition-all duration-300 flex items-center justify-center gap-3 disabled:bg-white/[0.03] disabled:text-white/10">
               {isGenerating
                 ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Generating…</span></>
                 : <><Mic className="w-4 h-4" /><span>Generate Lipsync</span></>
               }
-            </button>
+            </FeddaButton>
             {(!imageFilename || !audioFilename) && (
               <p className="text-center text-[8px] text-white/10 mt-2 uppercase tracking-widest">
                 Upload image + audio to start
@@ -342,6 +334,13 @@ export const LtxImgAudioPage = () => {
 
         </div>
       </div>
+
+      <VideoOutputPanel
+        title="LTX Lipsync Output"
+        currentVideo={currentVideo}
+        history={history}
+        isGenerating={isGenerating}
+      />
 
     </div>
   );

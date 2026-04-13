@@ -10,6 +10,8 @@ import { BACKEND_API } from '../../config/api';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
+import { FeddaButton, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
+import { VideoOutputPanel } from '../../components/layout/VideoOutputPanel';
 
 // ── Frame upload slot ─────────────────────────────────────────────────────────
 function FrameSlot({ label, preview, uploading, onFile }: {
@@ -78,8 +80,6 @@ export const LtxFlfPage = () => {
   const [pendingPromptId, setPendingPromptId] = useState<string | null>(null);
   const [currentVideo,    setCurrentVideo]    = useState<string | null>(null);
   const [history, setHistory] = usePersistentState<string[]>('ltx_flf_history', []);
-  void currentVideo;
-  void history;
   const [availableLoras, setAvailableLoras] = useState<string[]>([]);
 
   const sessionRef   = useRef<string[]>([]);
@@ -203,7 +203,7 @@ export const LtxFlfPage = () => {
 
           {/* Keyframes */}
           <div className="space-y-2">
-            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/20">Keyframes</p>
+            <FeddaSectionTitle className="text-white/20">Keyframes</FeddaSectionTitle>
             <div className="flex gap-2">
               <FrameSlot label="First" preview={firstPreview} uploading={firstUploading}
                 onFile={f => uploadFrame(f, setFirstFilename, setFirstPreview, setFirstUploading)} />
@@ -229,7 +229,7 @@ export const LtxFlfPage = () => {
 
           {/* Format */}
           <div className="space-y-3">
-            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/20">Format</p>
+            <FeddaSectionTitle className="text-white/20">Format</FeddaSectionTitle>
 
             {/* Aspect ratio */}
             <div className="flex flex-wrap gap-1">
@@ -277,21 +277,17 @@ export const LtxFlfPage = () => {
             <div className="flex gap-2">
               <input type="number" value={seed} onChange={e => setSeed(parseInt(e.target.value))}
                 className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl py-2.5 px-3 text-[11px] font-mono text-white/35 focus:border-violet-500/20 outline-none" />
-              <button onClick={() => setSeed(-1)}
-                className={`p-2.5 rounded-xl border transition-all ${
-                  seed === -1
-                    ? 'bg-violet-500/10 border-violet-500/30 text-violet-400'
-                    : 'bg-white/[0.02] border-white/[0.06] text-white/20 hover:text-white/50'
-                }`}>
+              <FeddaButton onClick={() => setSeed(-1)} variant={seed === -1 ? 'violet' : 'ghost'} className="p-2.5 rounded-xl transition-all">
                 <RefreshCw className="w-3.5 h-3.5" />
-              </button>
+              </FeddaButton>
             </div>
 
-            <button onClick={() => setShowAdvanced(v => !v)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-white/20 hover:text-white/40 transition-colors">
+            <FeddaButton onClick={() => setShowAdvanced(v => !v)}
+              variant="ghost"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-white/20 hover:text-white/40 transition-colors">
               <span className="text-[8px] font-black uppercase tracking-widest">Guide Strengths</span>
               {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
+            </FeddaButton>
 
             {showAdvanced && (
               <div className="grid grid-cols-2 gap-3 px-1">
@@ -324,17 +320,14 @@ export const LtxFlfPage = () => {
 
           {/* Generate */}
           <div className="pb-4">
-            <button disabled={!canGenerate} onClick={handleGenerate}
-              className={`w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] transition-all duration-300 flex items-center justify-center gap-3 ${
-                canGenerate
-                  ? 'bg-violet-500 text-white hover:bg-violet-400 hover:shadow-[0_0_40px_rgba(139,92,246,0.35)] active:scale-[0.98]'
-                  : 'bg-white/[0.03] text-white/10 cursor-not-allowed border border-white/[0.04]'
-              }`}>
+            <FeddaButton disabled={!canGenerate} onClick={handleGenerate}
+              variant="violet"
+              className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.35em] transition-all duration-300 flex items-center justify-center gap-3 disabled:bg-white/[0.03] disabled:text-white/10">
               {isGenerating
                 ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Generating…</span></>
                 : <><Play className="w-4 h-4" /><span>Generate</span></>
               }
-            </button>
+            </FeddaButton>
             {(!firstFilename || !lastFilename) && (
               <p className="text-center text-[8px] text-white/10 mt-2 uppercase tracking-widest">
                 Upload both frames to start
@@ -344,6 +337,13 @@ export const LtxFlfPage = () => {
 
         </div>
       </div>
+
+      <VideoOutputPanel
+        title="LTX First/Last Output"
+        currentVideo={currentVideo}
+        history={history}
+        isGenerating={isGenerating}
+      />
 
     </div>
   );

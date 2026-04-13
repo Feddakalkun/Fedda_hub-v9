@@ -10,6 +10,8 @@ import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { PromptAssistant } from '../../components/ui/PromptAssistant';
 import { LoraSelector } from '../../components/ui/LoraSelector';
+import { FeddaButton, FeddaPanel, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
+import { VideoOutputPanel } from '../../components/layout/VideoOutputPanel';
 
 const FPS = 24;
 const SCENE_COUNT = 4;
@@ -94,8 +96,6 @@ export const Wan22Vid2Vid = () => {
   const [pendingPromptId, setPendingPromptId] = useState<string | null>(null);
   const [sessionVideos, setSessionVideos]     = useState<string[]>([]);
   const [history, setHistory]                 = usePersistentState<string[]>('wan22v2v_history', []);
-  void sessionVideos;
-  void history;
   const [availableLoras, setAvailableLoras]   = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -284,6 +284,7 @@ export const Wan22Vid2Vid = () => {
     { label: 'Scene 3', value: prompt3, set: setPrompt3 },
     { label: 'Scene 4', value: prompt4, set: setPrompt4 },
   ];
+  const currentVideo = sessionVideos.length > 0 ? sessionVideos[sessionVideos.length - 1] : (history[0] ?? null);
 
   return (
     <div className="flex h-full bg-[#080808] overflow-hidden">
@@ -295,7 +296,7 @@ export const Wan22Vid2Vid = () => {
           {/* Header */}
           <div className="flex items-center gap-2">
             <Video className="w-4 h-4 text-violet-400" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">WAN 2.2 — Vid2Vid</h2>
+            <h2 className="fedda-kicker">WAN 2.2 - Vid2Vid</h2>
           </div>
 
           {/* ── VIDEO UPLOAD / PLAYER ── */}
@@ -337,7 +338,7 @@ export const Wan22Vid2Vid = () => {
               </div>
 
               {/* Clip selector */}
-              <div className="bg-black/30 rounded-xl border border-white/5 p-3 space-y-2">
+              <FeddaPanel className="p-3 space-y-2">
                 <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-600">
                   <span>Clip Selection</span>
                   <span className="font-mono text-violet-400/60">{clipFrames}f · {(clipFrames / FPS).toFixed(1)}s</span>
@@ -380,7 +381,7 @@ export const Wan22Vid2Vid = () => {
                       className="w-full bg-black/40 border border-white/5 rounded-lg px-2 py-1.5 text-xs font-mono text-violet-300 focus:border-violet-500/30 outline-none" />
                   </div>
                 </div>
-              </div>
+              </FeddaPanel>
             </div>
           )}
           <input ref={fileInputRef} type="file" accept="video/*" className="hidden"
@@ -390,7 +391,7 @@ export const Wan22Vid2Vid = () => {
 
           {/* ── RESIZE OPTIONS ── */}
           <div className="space-y-3">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Output Resize</p>
+            <FeddaSectionTitle className="text-slate-500">Output Resize</FeddaSectionTitle>
 
             {/* Aspect Ratio */}
             <div className="space-y-1.5">
@@ -442,7 +443,7 @@ export const Wan22Vid2Vid = () => {
 
           {/* ── 4 SCENE PROMPTS ── */}
           <div className="space-y-2">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Scene Expansions</p>
+            <FeddaSectionTitle className="text-slate-500">Scene Expansions</FeddaSectionTitle>
             {prompts.map(({ label, value, set }, i) => (
               <div key={i} className={`rounded-xl border transition-all ${value.trim() ? 'border-violet-500/20 bg-violet-500/5' : 'border-white/5 bg-white/[0.02]'}`}>
                 <button
@@ -485,7 +486,7 @@ export const Wan22Vid2Vid = () => {
           <div className="h-px bg-white/5" />
 
           <div className="space-y-3">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">LoRA Loaders</p>
+            <FeddaSectionTitle className="text-slate-500">LoRA Loaders</FeddaSectionTitle>
             <LoraSelector
               label="High Noise LoRA"
               value={loraHigh}
@@ -552,31 +553,34 @@ export const Wan22Vid2Vid = () => {
             <div className="flex gap-1.5">
               <input type="number" value={seed} onChange={e => setSeed(parseInt(e.target.value))}
                 className="w-28 bg-white/[0.02] border border-white/5 rounded-xl py-3 px-3 text-xs font-mono focus:border-violet-500/20 outline-none text-white/40" />
-              <button onClick={() => setSeed(-1)}
-                className={`p-3 rounded-xl border transition-all ${seed === -1 ? 'bg-violet-500/10 border-violet-500/30 text-violet-400' : 'bg-white/[0.02] border-white/5 text-slate-500'}`}>
+              <FeddaButton onClick={() => setSeed(-1)} variant={seed === -1 ? 'violet' : 'ghost'} className="p-3 rounded-xl transition-all">
                 <RefreshCw className="w-3.5 h-3.5" />
-              </button>
+              </FeddaButton>
             </div>
           </div>
 
           {/* ── RUN ── */}
           <div className="pb-6">
-            <button
+            <FeddaButton
               disabled={!uploadedVideoName || !prompt1.trim() || isGenerating}
               onClick={handleGenerate}
-              className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] transition-all duration-500 flex items-center justify-center gap-3 ${
-                !uploadedVideoName || !prompt1.trim() || isGenerating
-                  ? 'bg-white/5 text-white/10 cursor-not-allowed'
-                  : 'bg-violet-600 text-white hover:bg-violet-500 hover:shadow-[0_0_50px_rgba(139,92,246,0.4)]'
-              }`}
+              variant="violet"
+              className="w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] transition-all duration-500 flex items-center justify-center gap-3 disabled:bg-white/5 disabled:text-white/10"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
               <span>{isGenerating ? 'Generating...' : 'Generate'}</span>
-            </button>
+            </FeddaButton>
           </div>
 
         </div>
       </div>
+
+      <VideoOutputPanel
+        title="WAN Vid2Vid Output"
+        currentVideo={currentVideo}
+        history={history}
+        isGenerating={isGenerating}
+      />
 
     </div>
   );

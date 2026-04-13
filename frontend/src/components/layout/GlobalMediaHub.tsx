@@ -1,66 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Clapperboard, Images, RefreshCw, X } from 'lucide-react';
-
-type MediaKind = 'image' | 'video';
-
-interface MediaItem {
-  url: string;
-  source: string;
-  kind: MediaKind;
-}
-
-const MAX_ITEMS = 80;
-
-const parseStringArray = (value: string | null): string[] => {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((v) => typeof v === 'string' && v.trim().length > 0);
-  } catch {
-    return [];
-  }
-};
-
-const sourceIsVideo = (source: string, url: string): boolean => {
-  const s = source.toLowerCase();
-  const u = url.toLowerCase();
-  return (
-    s.includes('video') ||
-    s.includes('vid') ||
-    s.includes('wan') ||
-    s.includes('ltx') ||
-    u.includes('.mp4') ||
-    u.includes('.webm') ||
-    u.includes('.mov')
-  );
-};
-
-const loadAllMedia = (): MediaItem[] => {
-  const keys = Object.keys(localStorage).filter(
-    (key) => key.startsWith('gallery_') || key.endsWith('_history'),
-  );
-  const seen = new Set<string>();
-  const merged: MediaItem[] = [];
-
-  keys.forEach((key) => {
-    const source = key
-      .replace(/^gallery_/, '')
-      .replace(/_history$/, '');
-    const urls = parseStringArray(localStorage.getItem(key));
-    urls.forEach((url) => {
-      if (seen.has(url)) return;
-      seen.add(url);
-      merged.push({
-        url,
-        source,
-        kind: sourceIsVideo(source, url) ? 'video' : 'image',
-      });
-    });
-  });
-
-  return merged.slice(0, MAX_ITEMS);
-};
+import { Clapperboard, Download, Images, RefreshCw, X } from 'lucide-react';
+import { loadStoredMedia, triggerMediaDownload, type MediaKind, type MediaItem } from '../../utils/mediaStore';
 
 interface GlobalMediaHubProps {
   onNavigate: (tab: string) => void;
@@ -71,7 +11,7 @@ export const GlobalMediaHub = ({ onNavigate }: GlobalMediaHubProps) => {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [filter, setFilter] = useState<MediaKind | 'all'>('all');
 
-  const refresh = () => setItems(loadAllMedia());
+  const refresh = () => setItems(loadStoredMedia(80));
 
   useEffect(() => {
     refresh();
@@ -178,19 +118,26 @@ export const GlobalMediaHub = ({ onNavigate }: GlobalMediaHubProps) => {
                       </div>
                       <div className="p-2 space-y-2">
                         <div className="text-[10px] text-slate-500 truncate">{item.source}</div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="grid grid-cols-3 gap-1.5">
                           <button
                             onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
-                            className="flex-1 px-2 py-1 rounded-lg border border-white/10 text-[11px] text-slate-200 hover:bg-white/5"
+                            className="px-2 py-1 rounded-lg border border-white/10 text-[11px] text-slate-200 hover:bg-white/5"
                           >
                             Open
+                          </button>
+                          <button
+                            onClick={() => triggerMediaDownload(item.url, `fedda-${item.kind}-${idx + 1}.${item.kind === 'video' ? 'mp4' : 'png'}`)}
+                            className="px-2 py-1 rounded-lg border border-white/10 text-[11px] text-slate-200 hover:bg-white/5 inline-flex items-center justify-center gap-1"
+                          >
+                            <Download className="w-3 h-3" />
+                            Save
                           </button>
                           <button
                             onClick={() => {
                               onNavigate(item.kind === 'video' ? 'videos' : 'gallery');
                               setOpen(false);
                             }}
-                            className="px-2 py-1 rounded-lg border border-cyan-400/30 text-[11px] text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 inline-flex items-center gap-1"
+                            className="px-2 py-1 rounded-lg border border-cyan-400/30 text-[11px] text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 inline-flex items-center justify-center gap-1"
                           >
                             {item.kind === 'video' ? <Clapperboard className="w-3 h-3" /> : <Images className="w-3 h-3" />}
                             Go
