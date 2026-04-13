@@ -485,11 +485,7 @@ export const Wan21SteadyDancerPage = () => {
                 <UploadCard
                   label="Subject Image"
                   accept="image/*"
-                  previewUrl={
-                     subjectImageFile 
-                       ? `/comfy/view?filename=${encodeURIComponent(subjectImageFile)}&type=input`
-                       : null
-                  }
+                  previewUrl={subjectPreview}
                   uploading={uploadingSubject}
                   onFile={(file) => uploadFile(file, (name) => setSubjectImageFile(name), setUploadingSubject)}
                 />
