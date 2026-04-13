@@ -525,7 +525,7 @@ export const Wan21SteadyDancerPage = () => {
                     />
                 </div>
                 <FeddaButton 
-                    variant="primary" 
+                    variant="violet" 
                     onClick={handleGeneratePersona} 
                     disabled={isGeneratingPersona || !prompt.trim()}
                     className="w-[180px] shrink-0"

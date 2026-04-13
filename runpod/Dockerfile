@@ -1,11 +1,20 @@
 # ============================================================================
-# FEDDA RUNPOD IMAGE (GPU-flexible, CUDA 12.4, PyTorch cu124)
+# FEDDA RUNPOD IMAGE (GPU-flexible, CUDA 12.4, PyTorch cu124) - v9
 # ============================================================================
 
 FROM node:22-alpine AS frontend-builder
-COPY . /app
 WORKDIR /app/frontend
-RUN npm ci --no-audit --no-fund && npm run build
+# Copy only package files first for better caching
+COPY frontend/package*.json ./
+RUN npm ci --no-audit --no-fund
+
+# Copy the rest of the frontend and the directories needed by backend/config
+COPY frontend/ ./
+COPY backend/ /app/backend
+COPY config/ /app/config
+COPY assets/ /app/assets
+
+RUN npm run build
 
 FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
@@ -32,17 +41,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip wheel setuptools
 
-# PyTorch cu124 works across common RunPod NVIDIA GPUs (30/40/ADA/50 where supported by drivers)
+# PyTorch cu124 works across common RunPod NVIDIA GPUs
 RUN python3 -m pip install --no-cache-dir \
     torch torchvision torchaudio \
     --index-url https://download.pytorch.org/whl/cu124
 
-# Optional acceleration (never fail whole build)
+# Optional acceleration
 RUN python3 -m pip install --no-cache-dir xformers --index-url https://download.pytorch.org/whl/cu124 || true
 RUN python3 -m pip install --no-cache-dir torchao || true
 RUN python3 -m pip install --no-cache-dir sageattention || true
 
-# Clone ComfyUI at latest master to support newest LTX nodes (cache-bust: 2026-04-11)
+# Clone ComfyUI at latest master
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI \
     && cd /app/ComfyUI \
     && python3 -m pip install --no-cache-dir -r requirements.txt
@@ -125,7 +134,7 @@ RUN chmod +x /app/runpod_start.sh /app/start_comfy.sh
 WORKDIR /app
 EXPOSE 3000 8199 8888 8000
 
-LABEL org.opencontainers.image.source=https://github.com/Feddakalkun/Fedda_hub-v7
-LABEL org.opencontainers.image.description="FEDDA RunPod Studio (ComfyUI + Backend + Frontend)"
+LABEL org.opencontainers.image.source=https://github.com/Feddakalkun/Fedda_hub-v9
+LABEL org.opencontainers.image.description="FEDDA RunPod Studio v9 (ComfyUI + Backend + Frontend)"
 
 ENTRYPOINT ["/app/runpod_start.sh"]
