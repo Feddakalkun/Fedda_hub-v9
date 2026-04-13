@@ -1,15 +1,6 @@
 // Sidebar Navigation Component — expandable multi-level menu
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Video,
-  Music,
-  Sparkles,
-  Terminal,
-  MessageSquare,
-  Images,
-  Film,
-  Wand2,
-  LayoutDashboard,
   ChevronDown,
   ChevronRight,
   type LucideIcon,
@@ -32,11 +23,6 @@ interface NavNode {
   id: string;
   label: string;
   subitems?: NavNode[];
-}
-
-interface NavSection {
-  label: string;
-  items: NavItem[];
 }
 
 import { SIDEBAR_SECTIONS as SECTIONS } from '../../config/navigation';
