@@ -62,8 +62,7 @@ export const Wan22Img2Vid = () => {
   const [expanded, setExpanded] = useState<boolean[]>([true, true, true]);
   const toggleExpand = (i: number) => setExpanded(prev => prev.map((v, idx) => idx === i ? !v : v));
 
-  const [uploadedImage,     setUploadedImage]     = useState<string | null>(null);
-  const [uploadedImageName, setUploadedImageName] = useState<string | null>(null);
+  const [uploadedImageName, setUploadedImageName] = usePersistentState<string | null>('wan22i2v_image_file', null);
   const [uploading,         setUploading]         = useState(false);
 
   const [isGenerating,    setIsGenerating]    = useState(false);
@@ -71,6 +70,7 @@ export const Wan22Img2Vid = () => {
   const [sessionVideos,   setSessionVideos]   = useState<string[]>([]);
   const [history, setHistory] = usePersistentState<string[]>('wan22i2v_history', []);
   const [availableLoras, setAvailableLoras] = useState<string[]>([]);
+  const uploadedImage = uploadedImageName ? `/comfy/view?filename=${encodeURIComponent(uploadedImageName)}&type=input` : null;
 
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const sessionRef    = useRef<string[]>([]);
@@ -107,7 +107,6 @@ export const Wan22Img2Vid = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.detail || 'Upload failed');
       setUploadedImageName(data.filename);
-      setUploadedImage(URL.createObjectURL(file));
     } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
     finally { setUploading(false); }
   };

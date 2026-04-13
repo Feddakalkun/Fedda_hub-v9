@@ -11,6 +11,7 @@ import { PAGE_META, VALID_TABS } from './config/navigation';
 
 // ─── Persistence ───────────────────────────────────────────────────────────
 const TAB_KEY = 'fedda_active_tab_v2';
+const LANDING_DISMISSED_KEY = 'fedda_landing_dismissed_v1';
 
 function readActiveTab(): string {
   try {
@@ -18,6 +19,14 @@ function readActiveTab(): string {
     if (raw && VALID_TABS.has(raw)) return raw;
   } catch {}
   return 'chat';
+}
+
+function readShowLanding(): boolean {
+  try {
+    return localStorage.getItem(LANDING_DISMISSED_KEY) !== '1';
+  } catch {
+    return true;
+  }
 }
 
 import { ImageStudioPage } from './pages/ImageStudioPage';
@@ -29,8 +38,7 @@ import { VideosPage } from './pages/VideosPage';
 
 // ─── App ───────────────────────────────────────────────────────────────────
 function FeddaApp() {
-  // Show landing only on fresh page load (not when deep-linking via hash)
-  const [showLanding, setShowLanding] = useState(true);
+  const [showLanding, setShowLanding] = useState<boolean>(readShowLanding);
   const [activeTab, setActiveTab] = useState<string>(readActiveTab);
 
   // Persist tab selection across sessions
@@ -90,7 +98,14 @@ function FeddaApp() {
   return (
     <div className="flex h-screen theme-bg-app text-white overflow-hidden font-sans selection:bg-white/20">
       {/* Intro landing screen — fixed overlay until ComfyUI is ready */}
-      {showLanding && <LandingPage onEnter={() => setShowLanding(false)} />}
+      {showLanding && (
+        <LandingPage
+          onEnter={() => {
+            setShowLanding(false);
+            try { localStorage.setItem(LANDING_DISMISSED_KEY, '1'); } catch {}
+          }}
+        />
+      )}
 
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
 

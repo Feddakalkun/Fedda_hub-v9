@@ -74,10 +74,9 @@ export const LtxImgAudioPage = () => {
   const [loraName, setLoraName] = usePersistentState('ltx_ia_lora_name', '');
   const [loraStrength, setLoraStrength] = usePersistentState('ltx_ia_lora_strength', 1.0);
 
-  const [imageFilename,  setImageFilename]  = useState<string | null>(null);
-  const [imagePreview,   setImagePreview]   = useState<string | null>(null);
+  const [imageFilename,  setImageFilename]  = usePersistentState<string | null>('ltx_ia_image_file', null);
   const [imageUploading, setImageUploading] = useState(false);
-  const [audioFilename,  setAudioFilename]  = useState<string | null>(null);
+  const [audioFilename,  setAudioFilename]  = usePersistentState<string | null>('ltx_ia_audio_file', null);
   const [audioUploading, setAudioUploading] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -85,9 +84,10 @@ export const LtxImgAudioPage = () => {
 
   const [isGenerating,    setIsGenerating]    = useState(false);
   const [pendingPromptId, setPendingPromptId] = useState<string | null>(null);
-  const [currentVideo,    setCurrentVideo]    = useState<string | null>(null);
+  const [currentVideo,    setCurrentVideo]    = usePersistentState<string | null>('ltx_ia_current_video', null);
   const [history, setHistory] = usePersistentState<string[]>('ltx_ia_history', []);
   const [availableLoras, setAvailableLoras] = useState<string[]>([]);
+  const imagePreview = imageFilename ? `/comfy/view?filename=${encodeURIComponent(imageFilename)}&type=input` : null;
 
   const sessionRef   = useRef<string[]>([]);
   const prevCountRef = useRef(0);
@@ -109,7 +109,6 @@ export const LtxImgAudioPage = () => {
     file: File,
     setFilename: (s: string) => void,
     setUploading: (b: boolean) => void,
-    onPreview?: (url: string) => void,
   ) => {
     setUploading(true);
     try {
@@ -119,10 +118,18 @@ export const LtxImgAudioPage = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.detail || 'Upload failed');
       setFilename(data.filename);
-      onPreview?.(URL.createObjectURL(file));
     } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
     finally { setUploading(false); }
   };
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (!audioFilename) {
+      audioRef.current.removeAttribute('src');
+      return;
+    }
+    audioRef.current.src = `/comfy/view?filename=${encodeURIComponent(audioFilename)}&type=input`;
+  }, [audioFilename]);
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
@@ -215,12 +222,11 @@ export const LtxImgAudioPage = () => {
             <div className="flex gap-2">
               <UploadSlot label="Image" icon={ImageIcon} accept="image/*"
                 preview={imagePreview} filename={imageFilename} uploading={imageUploading}
-                onFile={f => uploadFile(f, setImageFilename, setImageUploading, setImagePreview)} />
+                onFile={f => uploadFile(f, setImageFilename, setImageUploading)} />
               <UploadSlot label="Audio" icon={Music} accept="audio/*"
                 filename={audioFilename} uploading={audioUploading}
                 onFile={f => {
                   uploadFile(f, setAudioFilename, setAudioUploading);
-                  if (audioRef.current) audioRef.current.src = URL.createObjectURL(f);
                 }} />
             </div>
 

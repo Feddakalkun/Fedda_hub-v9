@@ -69,18 +69,18 @@ export const LtxFlfPage = () => {
   const [loraStrength, setLoraStrength] = usePersistentState('ltx_flf_lora_strength', 1.0);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const [firstPreview,  setFirstPreview]  = useState<string | null>(null);
-  const [firstFilename, setFirstFilename] = useState<string | null>(null);
+  const [firstFilename, setFirstFilename] = usePersistentState<string | null>('ltx_flf_first_file', null);
   const [firstUploading, setFirstUploading] = useState(false);
-  const [lastPreview,   setLastPreview]   = useState<string | null>(null);
-  const [lastFilename,  setLastFilename]  = useState<string | null>(null);
+  const [lastFilename,  setLastFilename]  = usePersistentState<string | null>('ltx_flf_last_file', null);
   const [lastUploading, setLastUploading] = useState(false);
 
   const [isGenerating,    setIsGenerating]    = useState(false);
   const [pendingPromptId, setPendingPromptId] = useState<string | null>(null);
-  const [currentVideo,    setCurrentVideo]    = useState<string | null>(null);
+  const [currentVideo,    setCurrentVideo]    = usePersistentState<string | null>('ltx_flf_current_video', null);
   const [history, setHistory] = usePersistentState<string[]>('ltx_flf_history', []);
   const [availableLoras, setAvailableLoras] = useState<string[]>([]);
+  const firstPreview = firstFilename ? `/comfy/view?filename=${encodeURIComponent(firstFilename)}&type=input` : null;
+  const lastPreview = lastFilename ? `/comfy/view?filename=${encodeURIComponent(lastFilename)}&type=input` : null;
 
   const sessionRef   = useRef<string[]>([]);
   const prevCountRef = useRef(0);
@@ -101,7 +101,6 @@ export const LtxFlfPage = () => {
   const uploadFrame = async (
     file: File,
     setFn: (s: string) => void,
-    setPrev: (s: string) => void,
     setUpl: (b: boolean) => void,
   ) => {
     setUpl(true);
@@ -112,7 +111,6 @@ export const LtxFlfPage = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.detail || 'Upload failed');
       setFn(data.filename);
-      setPrev(URL.createObjectURL(file));
     } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
     finally { setUpl(false); }
   };
@@ -206,9 +204,9 @@ export const LtxFlfPage = () => {
             <FeddaSectionTitle className="text-white/20">Keyframes</FeddaSectionTitle>
             <div className="flex gap-2">
               <FrameSlot label="First" preview={firstPreview} uploading={firstUploading}
-                onFile={f => uploadFrame(f, setFirstFilename, setFirstPreview, setFirstUploading)} />
+                onFile={f => uploadFrame(f, setFirstFilename, setFirstUploading)} />
               <FrameSlot label="Last" preview={lastPreview} uploading={lastUploading}
-                onFile={f => uploadFrame(f, setLastFilename, setLastPreview, setLastUploading)} />
+                onFile={f => uploadFrame(f, setLastFilename, setLastUploading)} />
             </div>
             {firstFilename && lastFilename && (
               <p className="text-[8px] text-violet-400/40 font-mono">Both frames ready</p>

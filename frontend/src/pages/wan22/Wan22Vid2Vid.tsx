@@ -82,8 +82,7 @@ export const Wan22Vid2Vid = () => {
     setExpanded(prev => prev.map((v, idx) => idx === i ? !v : v));
 
   // Video upload + clip state
-  const [uploadedVideo, setUploadedVideo]         = useState<string | null>(null);
-  const [uploadedVideoName, setUploadedVideoName] = useState<string | null>(null);
+  const [uploadedVideoName, setUploadedVideoName] = usePersistentState<string | null>('wan22v2v_video_file', null);
   const [uploading, setUploading]                 = useState(false);
   const [isPlaying, setIsPlaying]                 = useState(false);
   const [videoDuration, setVideoDuration]         = useState(0);
@@ -97,6 +96,7 @@ export const Wan22Vid2Vid = () => {
   const [sessionVideos, setSessionVideos]     = useState<string[]>([]);
   const [history, setHistory]                 = usePersistentState<string[]>('wan22v2v_history', []);
   const [availableLoras, setAvailableLoras]   = useState<string[]>([]);
+  const uploadedVideo = uploadedVideoName ? `/comfy/view?filename=${encodeURIComponent(uploadedVideoName)}&type=input` : null;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef     = useRef<HTMLVideoElement>(null);
@@ -175,7 +175,6 @@ export const Wan22Vid2Vid = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.detail || 'Upload failed');
       setUploadedVideoName(data.filename);
-      setUploadedVideo(URL.createObjectURL(file));
     } catch (err: any) {
       toast(err.message || 'Upload failed', 'error');
     } finally {
