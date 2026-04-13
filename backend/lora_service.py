@@ -30,6 +30,11 @@ PACKS: Dict[str, Dict[str, str]] = {
         "hf_type":       "model",
         "dest":          "zimage_turbo",
     },
+    "zimage_community": {
+        "hf_repo":       "torestinbar/z-image-turbo",
+        "hf_type":       "model",
+        "dest":          "zimage_turbo",
+    },
     "wan22_nsfw": {
         "hf_repo":       "lkzd7/WAN2.2_LoraSet_NSFW",
         "hf_type":       "model",
@@ -164,9 +169,9 @@ class LoRAService:
         repo     = pack["hf_repo"]
         hf_type  = pack["hf_type"]
         api_url  = (
-            f"https://huggingface.co/api/datasets/{repo}/tree/main"
+            f"https://huggingface.co/api/datasets/{repo}/tree/main?recursive=1"
             if hf_type == "dataset"
-            else f"https://huggingface.co/api/models/{repo}/tree/main"
+            else f"https://huggingface.co/api/models/{repo}/tree/main?recursive=1"
         )
 
         try:

@@ -52,6 +52,7 @@ const FAMILY_PACKS: Record<LoRAFamily, PackConfig[]> = {
     'z-image':    [
         { key: 'zimage_turbo', title: 'Z-Image Turbo Celeb Pack', subtitle: 'pmczip/Z-Image-Turbo_Models' },
         { key: 'zimage_nsfw', title: 'Z-Image NSFW Pack', subtitle: 'qqnyanddld/nsfw-z-image-lora' },
+        { key: 'zimage_community', title: 'Z-Image Community Pack', subtitle: 'torestinbar/z-image-turbo' },
     ],
     qwen:         [],
     flux2klein:   [
