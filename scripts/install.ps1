@@ -110,28 +110,33 @@ function Install-MockingbirdRuntime {
     New-Item -ItemType Directory -Path $MockDir, $SpeakersDir, $OutputDir, $ModelsDir, $InstallerDir -Force | Out-Null
 
     if (-not (Test-Path $PythonExe)) {
-        Download-File -Url "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe" -Dest $InstallerExe
-        Write-Log "[Mockingbird] Installing dedicated Python 3.10 runtime..."
-        $Args = @(
-            "/quiet",
-            "InstallAllUsers=0",
-            "PrependPath=0",
-            "Include_pip=1",
-            "Include_dev=1",
-            "Include_test=0",
-            "Include_tcltk=0",
-            "Include_doc=0",
-            "Include_launcher=0",
-            "AssociateFiles=0",
-            "Shortcuts=0",
-            "TargetDir=$PythonRoot"
-        )
-        $Proc = Start-Process -FilePath $InstallerExe -ArgumentList $Args -Wait -PassThru
-        if ($Proc.ExitCode -ne 0 -or -not (Test-Path $PythonExe)) {
-            throw "Mockingbird Python install failed with exit code $($Proc.ExitCode)"
+        $PyZip = Join-Path $InstallerDir "python-3.10.11-embed.zip"
+        Download-File -Url "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip" -Dest $PyZip
+        
+        Write-Log "[Mockingbird] Extracting dedicated Python 3.10.11 runtime..."
+        New-Item -ItemType Directory -Path $PythonRoot -Force | Out-Null
+        Extract-Zip $PyZip $PythonRoot
+        Remove-Item $PyZip -Force
+
+        # Configure python310._pth for pip support
+        $PthFile = Join-Path $PythonRoot "python310._pth"
+        if (Test-Path $PthFile) {
+            $PthContent = Get-Content $PthFile
+            $PthContent = $PthContent -replace "#import site", "import site"
+            Set-Content -Path $PthFile -Value $PthContent
         }
+
+        # Bootstrap Pip
+        Write-Log "[Mockingbird] Bootstrapping Pip..."
+        $GetPip = Join-Path $InstallerDir "get-pip.py"
+        Download-File -Url "https://bootstrap.pypa.io/get-pip.py" -Dest $GetPip
+        $PipProc = Start-Process -FilePath $PythonExe -ArgumentList "$GetPip --no-warn-script-location" -NoNewWindow -Wait -PassThru
+        if ($PipProc.ExitCode -ne 0) {
+            Write-Log "WARNING: Mockingbird pip bootstrap failed (code $($PipProc.ExitCode))"
+        }
+        Remove-Item $GetPip -Force
     } else {
-        Write-Log "[Mockingbird] Dedicated Python already present."
+        Write-Log "[Mockingbird] Dedicated Python 3.10 already present."
     }
 
     if (-not (Test-Path $VenvPy)) {

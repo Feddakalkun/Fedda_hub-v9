@@ -641,29 +641,28 @@ function Install-MockingbirdRuntime {
     New-Item -ItemType Directory -Path $MockDir, $SpeakersDir, $OutputDir, $ModelsDir, $InstallerDir -Force | Out-Null
 
     if (-not (Test-Path $PythonExe)) {
-        Write-Step "Downloading dedicated Python 3.10 for Mockingbird..." "Yellow"
-        & curl.exe -L -o "$InstallerExe" "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe" --retry 3 --retry-delay 2 --progress-bar
-        if ($LASTEXITCODE -ne 0) { throw "Failed to download Python 3.10 installer for Mockingbird" }
+        $PyZip = Join-Path $InstallerDir "python-3.10.11-embed.zip"
+        Download-File -Url "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip" -Dest $PyZip
+        
+        Write-Step "Extracting dedicated Python 3.10.11 runtime..." "Yellow"
+        New-Item -ItemType Directory -Path $PythonRoot -Force | Out-Null
+        Extract-Zip $PyZip $PythonRoot
+        Remove-Item $PyZip -Force
 
-        Write-Step "Installing dedicated Python 3.10 runtime..." "Yellow"
-        $Args = @(
-            "/quiet",
-            "InstallAllUsers=0",
-            "PrependPath=0",
-            "Include_pip=1",
-            "Include_dev=1",
-            "Include_test=0",
-            "Include_tcltk=0",
-            "Include_doc=0",
-            "Include_launcher=0",
-            "AssociateFiles=0",
-            "Shortcuts=0",
-            "TargetDir=$PythonRoot"
-        )
-        $Proc = Start-Process -FilePath $InstallerExe -ArgumentList $Args -Wait -PassThru
-        if ($Proc.ExitCode -ne 0 -or -not (Test-Path $PythonExe)) {
-            throw "Dedicated Python 3.10 install failed with exit code $($Proc.ExitCode)"
+        # Configure python310._pth for pip support
+        $PthFile = Join-Path $PythonRoot "python310._pth"
+        if (Test-Path $PthFile) {
+            $PthContent = Get-Content $PthFile
+            $PthContent = $PthContent -replace "#import site", "import site"
+            Set-Content -Path $PthFile -Value $PthContent
         }
+
+        # Bootstrap Pip
+        Write-Step "Bootstrapping Pip..." "Yellow"
+        $GetPip = Join-Path $InstallerDir "get-pip.py"
+        Download-File -Url "https://bootstrap.pypa.io/get-pip.py" -Dest $GetPip
+        & $PythonExe $GetPip --no-warn-script-location
+        Remove-Item $GetPip -Force
     } else {
         Write-Step "Dedicated Mockingbird Python already installed." "Green"
     }
