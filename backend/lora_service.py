@@ -7,6 +7,7 @@ Preview images: prefers /lora-previews/<pack_key>/<Basename>.jpg stored in GitHu
 falls back to the HuggingFace-hosted image if not present locally.
 """
 
+import re
 import threading
 import time
 import uuid
@@ -86,6 +87,78 @@ UPLOAD_DESTINATIONS: Dict[str, Dict[str, str]] = {
 }
 
 ALLOWED_UPLOAD_EXTENSIONS = {".safetensors", ".ckpt", ".pt", ".pth", ".bin"}
+
+# ─── Name prettifier ───────────────────────────────────────────────────────────
+# Initialisms that should stay uppercase in display names
+_KEEP_UPPER = {
+    "nsfw", "xl", "sd", "fp8", "fp16", "bf16", "int4", "int8",
+    "nf4", "bnb", "vae", "lora", "lycoris", "loha", "lokr",
+    "ii", "iii", "iv", "vi", "vii", "viii", "xl",
+}
+
+# Technical suffixes to strip from the display name (applied in order)
+_STRIP_SUFFIXES = re.compile(
+    r"[-_]?"
+    r"("
+    r"v\d+(\.\d+)?"
+    r"|fp(?:8|16|32)"
+    r"|bf16"
+    r"|int(?:4|8)"
+    r"|nf4?"
+    r"|bnb(?:[_-]?(?:int|nf)\d)?"
+    r"|q\d+_k(?:_[ms])?"
+    r"|gguf"
+    r"|safe"
+    r"|merged"
+    r")"
+    r"$",
+    re.IGNORECASE,
+)
+
+
+def _prettify_lora_name(basename: str) -> str:
+    """
+    Convert a raw LoRA filename stem into a human-readable display name.
+
+    Examples:
+        "2B_NBS"                           -> "2B NBS"
+        "[ART_STYLE]_Watercolor_V2"        -> "Art Style: Watercolor"
+        "adetailer-v3-BNB-INT8"            -> "Adetailer"
+        "AIDOL_style_Webtoon_SDXL_FP8"     -> "Aidol Style Webtoon SDXL"
+    """
+    name = basename.strip()
+
+    # 1. Convert leading tag like "[ART STYLE]" or "[ART_STYLE]" to "Art Style:"
+    bracket_match = re.match(r'^\[([^\]]+)\][_\s-]*(.+)$', name)
+    if bracket_match:
+        tag   = bracket_match.group(1).replace('_', ' ').title()
+        rest  = bracket_match.group(2)
+        name  = f"{tag}: {rest}"
+
+    # 2. Replace underscores and hyphens with spaces
+    name = re.sub(r'[_\-]+', ' ', name).strip()
+
+    # 3. Strip trailing technical suffixes (repeated until stable)
+    for _ in range(6):
+        cleaned = _STRIP_SUFFIXES.sub('', name.rstrip()).strip()
+        if cleaned == name:
+            break
+        name = cleaned
+
+    # 4. Title-case each word, preserving known initialisms
+    words = name.split()
+    pretty: list[str] = []
+    for word in words:
+        if word.lower() in _KEEP_UPPER:
+            pretty.append(word.upper())
+        else:
+            pretty.append(word.capitalize())
+    name = ' '.join(pretty)
+
+    # 5. Clean up any double spaces
+    name = re.sub(r'  +', ' ', name).strip()
+
+    return name or basename
 
 FREE_LORAS = [
     {
@@ -228,7 +301,7 @@ class LoRAService:
             size_bytes = hf_item.get("size", 0)
 
             items.append({
-                "name":        basename.replace("_", " "),
+                "name":        _prettify_lora_name(basename),
                 "file":        filename,
                 "installed":   filename in installed,
                 "size_mb":     round(size_bytes / (1024 * 1024), 1) if size_bytes else None,

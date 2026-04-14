@@ -667,15 +667,8 @@ function Install-MockingbirdRuntime {
         Write-Step "Dedicated Mockingbird Python already installed." "Green"
     }
 
-    if (-not (Test-Path $VenvPy)) {
-        Write-Step "Creating Mockingbird virtual environment..." "Yellow"
-        & $PythonExe -m venv "$VenvDir"
-        if ($LASTEXITCODE -ne 0 -or -not (Test-Path $VenvPy)) {
-            throw "Failed to create Mockingbird virtual environment"
-        }
-    } else {
-        Write-Step "Mockingbird virtual environment already exists." "Green"
-    }
+    # Use dedicated portable Python directly (embedded zip lacks venv module)
+    $VenvPy = $PythonExe
 
     if (-not (Test-Path $RepoDir)) {
         Write-Step "Cloning xtts-api-server..." "Yellow"
